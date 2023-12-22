@@ -1,6 +1,7 @@
 from utils import object_distance
-from random import random, randint
+import random
 import copy
+import numpy as np
 from numpy import exp
 from numpy.random import rand
 
@@ -29,36 +30,26 @@ class Board:
             )
             self.total_dist += component.dist_to_centroid
 
-    def weight_randomChoice(self):
+    def weight_randomChoice(self, n_components):
         randomInt = random.choices(
             range(len(self.body_list)),
             weights=list(map(lambda d: d.dist_to_centroid, self.body_list)),
-            k=1,
+            k=random.randint(1, n_components),
         )
-        return self.body_list.pop(randomInt[0])
+        return np.array(self.body_list)[randomInt]
 
     def update(self, i, n_components=None):
         tempBoard = copy.deepcopy(self)
-        # tempBoard.sortByCentroid(centroid)
         if n_components != None:
-            done = []
-            for n in range(randint(0, n_components)):
-                #   tempBoard.body_list[n].update_position(tempBoard.bounds, tempBoard.step_size, centroid)
-                component = tempBoard.weight_randomChoice()
-                component.update_position(
-                    tempBoard.bounds, tempBoard.step_size, tempBoard
-                )
-                done.append(component)
-            # print("Retrieving popped components {}".format(len(done)))
-            for component in done:
-                tempBoard.body_list.append(component)
+            for n in range(random.randint(0, n_components)):
+                componentsToMove = tempBoard.weight_randomChoice(n_components)
+                for component in componentsToMove:
+                    component.update_position(tempBoard.bounds, tempBoard.step_size, tempBoard)
 
         else:
             for n in range(len(tempBoard.body_list)):
                 component = tempBoard.body_list[n]
-                component.update_position(
-                    tempBoard.bounds, tempBoard.step_size, tempBoard
-                )
+                component.update_position(tempBoard.bounds, tempBoard.step_size, tempBoard)
 
         # difference between candidate and current point evaluation
         diff = tempBoard.total_dist - self.total_dist
@@ -68,18 +59,20 @@ class Board:
         # calculate metropolis acceptance criterion
         metropolis = exp(-diff / t)
         # check if we should keep the new point
+        tempBoard.resolve_overlap()
         # print("Violtaion {}".format(tempBoard.rule_violation()))
         if diff < 0 and rand() < metropolis and not tempBoard.rule_violation():
+            # if diff < 0 and rand() < metropolis:
             # store the new current point
+            print(f"iter: {i} Updated")
             self.body_list = copy.deepcopy(tempBoard.body_list)
             self.total_dist = tempBoard.total_dist
 
     def rule_violation(self):
         for temp_component in self.body_list:
-            if self.outOfBounds(temp_component):  # Check excess board
+            if self.outOfBounds(temp_component):
                 return True
             if temp_component.hasOverlap(self.body_list) != None:
-                # print("Detecting overlaps")
                 return True
         return False
 

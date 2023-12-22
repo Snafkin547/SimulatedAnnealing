@@ -2,6 +2,7 @@ from utils import object_distance
 from random import randint
 import matplotlib.pyplot as plt
 
+
 class Component:
     def __init__(self, x, y, width, height, r, g, b):
         self.x = x
@@ -21,7 +22,9 @@ class Component:
         y = self.y
         x_lower_lim = x - self.width / 2
         y_lower_lim = y - self.height / 2
-        ax.add_patch(plt.Rectangle((x_lower_lim, y_lower_lim), self.width, self.height, color=(r, g, b)))
+        ax.add_patch(
+            plt.Rectangle((x_lower_lim, y_lower_lim), self.width, self.height, color=(r, g, b))
+        )
 
     def resolve_overlap(self, field):
         for _component in field.body_list:
@@ -30,13 +33,9 @@ class Component:
                     x_buffer = self.width / 2 + _component.width / 2
                     y_buffer = self.height / 2 + _component.height / 2
                     if self.dist_to_centroid < _component.dist_to_centroid:
-                        field.overlap_resolve_helper(
-                            self, _component, x_buffer, y_buffer
-                        )
+                        field.overlap_resolve_helper(self, _component, x_buffer, y_buffer)
                     else:
-                        field.overlap_resolve_helper(
-                            _component, self, x_buffer, y_buffer
-                        )
+                        field.overlap_resolve_helper(_component, self, x_buffer, y_buffer)
 
                     _component.resolve_overlap(field)  # Recurse till no overlap
 

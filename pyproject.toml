@@ -9,10 +9,8 @@ exclude = '''
   | \.mypy_cache
   | \.tox
   | \.txt
-    ...
   | \.venv
   | venv
-  | ...
   | _build
   | buck-out
   | build
